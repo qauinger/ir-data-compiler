@@ -53,6 +53,7 @@ public class IRDataCompiler extends JFrame {
 
         JButton sourceOpen = new JButton("Select");
         sourceOpen.setBounds(400, 10, 75, 22);
+        sourceOpen.setFocusPainted(false);
         sourceOpen.addActionListener(e -> {
             File directory = Utils.chooseFolder("Select a Folder", ".");
             if (directory != null)
@@ -71,12 +72,14 @@ public class IRDataCompiler extends JFrame {
         sortAscending.setBounds(130, 40, 100, 22);
         sortAscending.setActionCommand("ascending");
         sortAscending.setSelected(true);
+        sortAscending.setFocusPainted(false);
         sortGroup.add(sortAscending);
         contentPane.add(sortAscending);
 
         JRadioButton sortDescending = new JRadioButton("Descending");
         sortDescending.setBounds(230, 40, 100, 22);
         sortDescending.setActionCommand("descending");
+        sortDescending.setFocusPainted(false);
         sortGroup.add(sortDescending);
         contentPane.add(sortDescending);
 
@@ -88,6 +91,7 @@ public class IRDataCompiler extends JFrame {
         JCheckBox normalizeCheckBox = new JCheckBox("Normalize");
         normalizeCheckBox.setBounds(130, 70, 100, 22);
         normalizeCheckBox.setToolTipText("Normalize values.");
+        normalizeCheckBox.setFocusPainted(false);
         contentPane.add(normalizeCheckBox);
 
         JButton githubLink = new JButton("Qauinger");
@@ -98,11 +102,13 @@ public class IRDataCompiler extends JFrame {
         githubLink.setOpaque(false);
         githubLink.setContentAreaFilled(false);
         githubLink.setBorderPainted(false);
+        githubLink.setFocusPainted(false);
         githubLink.addActionListener(e -> Utils.openWebpage("https://github.com/qauinger/"));
         contentPane.add(githubLink);
 
         JButton compileButton = new JButton("Compile");
         compileButton.setBounds(192, 100, 100, 22);
+        compileButton.setFocusPainted(false);
         compileButton.addActionListener(e -> {
             File dir = new File(sourceField.getText());
             if(dir.isDirectory()) {
