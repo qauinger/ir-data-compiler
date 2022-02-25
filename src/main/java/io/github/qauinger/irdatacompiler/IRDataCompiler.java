@@ -9,10 +9,12 @@ import java.io.IOException;
 
 public class IRDataCompiler extends JFrame {
 
+    private static final String title = "IRDataCompiler - v1.1";
+
     public static final String[] extensions = new String[]{"txt", "dpt", "csv"};
 
-    private JPanel contentPane;
-    private JTextField sourceField;
+    private final JTextField sourceField;
+    private final JTextField outputField;
     BufferedImage icon;
     BufferedImage octocat;
 
@@ -29,13 +31,13 @@ public class IRDataCompiler extends JFrame {
             ex.printStackTrace();
         }
 
-        setTitle("IRDataCompiler - v1.0");
+        setTitle(title);
         setIconImage(icon);
         setResizable(false);
-        setSize(500, 170);
+        setSize(500, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        contentPane = new JPanel();
+        JPanel contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         contentPane.setLayout(null);
@@ -55,21 +57,42 @@ public class IRDataCompiler extends JFrame {
         sourceOpen.setBounds(400, 10, 75, 22);
         sourceOpen.setFocusPainted(false);
         sourceOpen.addActionListener(e -> {
-            File directory = Utils.chooseFolder("Select a Folder", ".");
+            File directory = Utils.chooseFolder("Select a Folder", sourceOpen.getText());
             if (directory != null)
                 sourceField.setText(directory.toString());
         });
         contentPane.add(sourceOpen);
 
+        JLabel outputLabel = new JLabel("Output Directory:");
+        outputLabel.setBounds(10, 40, 110, 22);
+        outputLabel.setToolTipText("File path to the folder where the compiled file will be dumped.");
+        outputLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        contentPane.add(outputLabel);
+
+        outputField = new JTextField();
+        outputField.setBounds(130, 40, 260, 22);
+        contentPane.add(outputField);
+        outputField.setColumns(10);
+
+        JButton outputOpen = new JButton("Select");
+        outputOpen.setBounds(400, 40, 75, 22);
+        outputOpen.setFocusPainted(false);
+        outputOpen.addActionListener(e -> {
+            File directory = Utils.chooseFile("Select an Output File", outputOpen.getText());
+            if (directory != null)
+                outputField.setText(directory.toString());
+        });
+        contentPane.add(outputOpen);
+
         JLabel sortLabel = new JLabel("Sort Order:");
-        sortLabel.setBounds(10, 40, 110, 22);
+        sortLabel.setBounds(10, 70, 110, 22);
         sortLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         contentPane.add(sortLabel);
 
         ButtonGroup sortGroup = new ButtonGroup();
 
         JRadioButton sortAscending = new JRadioButton("Ascending");
-        sortAscending.setBounds(130, 40, 100, 22);
+        sortAscending.setBounds(130, 70, 100, 22);
         sortAscending.setActionCommand("ascending");
         sortAscending.setSelected(true);
         sortAscending.setFocusPainted(false);
@@ -77,25 +100,25 @@ public class IRDataCompiler extends JFrame {
         contentPane.add(sortAscending);
 
         JRadioButton sortDescending = new JRadioButton("Descending");
-        sortDescending.setBounds(230, 40, 100, 22);
+        sortDescending.setBounds(230, 70, 100, 22);
         sortDescending.setActionCommand("descending");
         sortDescending.setFocusPainted(false);
         sortGroup.add(sortDescending);
         contentPane.add(sortDescending);
 
         JLabel optionsLabel = new JLabel("Options:");
-        optionsLabel.setBounds(10, 70, 110, 22);
+        optionsLabel.setBounds(10, 100, 110, 22);
         optionsLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         contentPane.add(optionsLabel);
 
         JCheckBox normalizeCheckBox = new JCheckBox("Normalize");
-        normalizeCheckBox.setBounds(130, 70, 100, 22);
+        normalizeCheckBox.setBounds(130, 100, 100, 22);
         normalizeCheckBox.setToolTipText("Normalize values.");
         normalizeCheckBox.setFocusPainted(false);
         contentPane.add(normalizeCheckBox);
 
-        JButton githubLink = new JButton("Qauinger");
-        githubLink.setBounds(-8, 100, 110, 22);
+        JButton githubLink = new JButton("qauinger");
+        githubLink.setBounds(-8, 130, 110, 22);
         githubLink.setIcon(new ImageIcon(octocat));
         githubLink.setToolTipText("https://github.com/qauinger/");
         githubLink.setHorizontalAlignment(SwingConstants.LEFT);
@@ -103,31 +126,47 @@ public class IRDataCompiler extends JFrame {
         githubLink.setContentAreaFilled(false);
         githubLink.setBorderPainted(false);
         githubLink.setFocusPainted(false);
-        githubLink.addActionListener(e -> Utils.openWebpage("https://github.com/qauinger/"));
+        githubLink.addActionListener(e -> {
+            if(!Utils.openWebpage("https://github.com/qauinger/")) {
+                Utils.showDialog("GitHub", "qauinger on GitHub:\nhttps://github.com/qauinger", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
         contentPane.add(githubLink);
 
         JButton compileButton = new JButton("Compile");
-        compileButton.setBounds(192, 100, 100, 22);
+        compileButton.setBounds(192, 130, 100, 22);
         compileButton.setFocusPainted(false);
         compileButton.addActionListener(e -> {
             File dir = new File(sourceField.getText());
+            File output = new File(outputField.getText());
             if(dir.isDirectory()) {
-                int fileCount = Utils.countFiles(dir, extensions);
-                if(fileCount < 2) {
-                    Utils.showDialog(getTitle(), "There must be 2 or more files to compile in directory.", JOptionPane.CLOSED_OPTION, JOptionPane.ERROR_MESSAGE);
-                } else {
-                    String message = "Compile " + fileCount + " files?";
-                    if(normalizeCheckBox.isSelected())
-                        message = message + "\n • Normalize";
-                    int result = Utils.showDialog(getTitle(), message, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-                    if(result == JOptionPane.OK_OPTION) {
-                        Compiler.compile(dir, sortGroup.getSelection().getActionCommand().equals("ascending") ? Compiler.sort.ASCENDING : Compiler.sort.DESCENDING, normalizeCheckBox.isSelected());
+                if(output.isDirectory() || output.exists()) {
+                    int fileCount = Utils.countFiles(dir, extensions);
+                    if(fileCount < 2) {
+                        Utils.showDialog(getProgramTitle(), "There must be 2 or more files to compile in directory.", JOptionPane.CLOSED_OPTION, JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        String message = "Compile " + fileCount + " files?";
+                        if(normalizeCheckBox.isSelected())
+                            message = message + "\n • Normalize";
+                        int result = Utils.showDialog(getProgramTitle(), message, JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+                        if(result == JOptionPane.OK_OPTION) {
+                            if(!Compiler.compile(dir, output, sortGroup.getSelection().getActionCommand().equals("ascending") ? Compiler.Sort.ASCENDING : Compiler.Sort.DESCENDING, normalizeCheckBox.isSelected())) {
+                                Utils.showDialog(getProgramTitle(), "An unexpected error has occured.", JOptionPane.DEFAULT_OPTION, JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
                     }
+                } else {
+                    Utils.showDialog(getProgramTitle(), "You must supply a valid output directory. This may be a folder or a file.", JOptionPane.CLOSED_OPTION, JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                Utils.showDialog(getTitle(), "You must supply a valid source directory.", JOptionPane.CLOSED_OPTION, JOptionPane.ERROR_MESSAGE);
+                Utils.showDialog(getProgramTitle(), "You must supply a valid source directory.", JOptionPane.CLOSED_OPTION, JOptionPane.ERROR_MESSAGE);
             }
         });
         contentPane.add(compileButton);
+    }
+
+    public static String getProgramTitle() {
+        return title;
     }
 }

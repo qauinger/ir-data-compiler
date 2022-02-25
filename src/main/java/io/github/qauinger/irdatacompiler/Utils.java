@@ -8,18 +8,28 @@ import java.util.ArrayList;
 
 public class Utils {
 
-    private static JFileChooser folderChooser;
+    private static final JFileChooser folderChooser;
+    private static final JFileChooser fileChooser;
 
     static {
         folderChooser = new JFileChooser();
         folderChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         folderChooser.setAcceptAllFileFilterUsed(true);
+        fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+        fileChooser.setAcceptAllFileFilterUsed(true);
     }
 
     public static File chooseFolder(String title, String dir) {
         folderChooser.setDialogTitle(title);
         folderChooser.setCurrentDirectory(new File(dir));
         return (folderChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) ? folderChooser.getSelectedFile() : null;
+    }
+
+    public static File chooseFile(String title, String dir) {
+        fileChooser.setDialogTitle(title);
+        fileChooser.setCurrentDirectory(new File(dir));
+        return (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) ? fileChooser.getSelectedFile() : null;
     }
 
     public static int showDialog(String title, String message, int optionType, int messageType) {
